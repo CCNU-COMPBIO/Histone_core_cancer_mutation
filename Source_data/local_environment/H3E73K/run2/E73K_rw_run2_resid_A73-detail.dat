@@ -1,0 +1,15 @@
+Found 13 hbonds.
+donor 		 acceptor 	 occupancy
+LYS36-Main 	 ARG32-Main 	 53.00%
+LYS36-Side 	 ASN98-Side 	 2.00%
+GLN39-Side 	 LYS36-Main 	 1.50%
+LYS36-Side 	 GLN39-Side 	 1.25%
+GLN39-Main 	 LYS36-Main 	 6.00%
+LYS36-Side 	 ASP40-Side 	 6.50%
+ASP40-Main 	 LYS36-Main 	 9.25%
+LYS36-Side 	 LEU33-Main 	 2.00%
+LYS36-Side 	 ARG32-Main 	 0.75%
+LYS36-Main 	 GLN39-Side 	 0.75%
+LYS36-Side 	 GLN100-Main 	 0.25%
+LYS36-Side 	 GLN100-Side 	 3.00%
+LYS36-Main 	 LEU33-Main 	 0.25%

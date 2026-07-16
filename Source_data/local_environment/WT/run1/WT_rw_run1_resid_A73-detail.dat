@@ -1,0 +1,13 @@
+Found 11 hbonds.
+donor 		 acceptor 	 occupancy
+GLU36-Main 	 ARG32-Main 	 48.00%
+ASN98-Side 	 GLU36-Side 	 8.50%
+GLU36-Main 	 LEU33-Main 	 1.00%
+GLN39-Main 	 GLU36-Main 	 5.75%
+GLN39-Side 	 GLU36-Main 	 3.00%
+ASP40-Main 	 GLU36-Main 	 2.50%
+ASN98-Main 	 GLU36-Side 	 12.25%
+LEU33-Main 	 GLU36-Side 	 0.25%
+GLU36-Side 	 LEU33-Main 	 0.50%
+GLN39-Side 	 GLU36-Side 	 0.25%
+GLU36-Main 	 GLN39-Side 	 0.25%
