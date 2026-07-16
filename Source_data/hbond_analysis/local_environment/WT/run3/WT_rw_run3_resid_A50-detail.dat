@@ -1,0 +1,14 @@
+Found 12 hbonds.
+donor 		 acceptor 	 occupancy
+GLU13-Main 	 VAL9-Main 	 79.05%
+ARG112-Side 	 GLU13-Side 	 69.83%
+TYR17-Main 	 GLU13-Main 	 96.76%
+ARG108-Side 	 GLU13-Side 	 2.99%
+GLU13-Side 	 ALA10-Main 	 4.99%
+GLU13-Side 	 VAL9-Main 	 2.24%
+TYR17-Side 	 GLU13-Side 	 2.24%
+GLU13-Side 	 ARG16-Side 	 0.25%
+ARG16-Side 	 GLU13-Main 	 1.75%
+ALA10-Main 	 GLU13-Side 	 1.00%
+ARG16-Side 	 GLU13-Side 	 4.99%
+TYR17-Side 	 GLU13-Main 	 0.25%

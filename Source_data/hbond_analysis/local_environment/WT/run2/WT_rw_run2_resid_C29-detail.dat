@@ -1,0 +1,15 @@
+Found 13 hbonds.
+donor 		 acceptor 	 occupancy
+LEU195-Main 	 ARG191-Main 	 90.27%
+ARG191-Side 	 DC782-Side 	 15.46%
+ARG191-Side 	 SER287-Main 	 9.73%
+GLU286-Side 	 ARG191-Side 	 1.50%
+LEU195-Side 	 ARG191-Main 	 2.74%
+ARG191-Side 	 GLU286-Side 	 1.50%
+TYR291-Side 	 ARG191-Side 	 2.24%
+ARG191-Side 	 TYR291-Side 	 0.50%
+ARG194-Side 	 ARG191-Main 	 1.25%
+ARG191-Side 	 DC1022-Side 	 7.73%
+ARG191-Side 	 ARG194-Side 	 0.75%
+ARG191-Side 	 DC1021-Side 	 0.50%
+ARG191-Main 	 PRO188-Main 	 0.25%
