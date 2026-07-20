@@ -1,22 +1,25 @@
-# Source Data
+# Scripts for Analyses
 
-This directory contains molecular dynamics trajectories, per-frame MM/GBSA calculation results, and summary statistics used in this study.
+This directory contains modular analysis scripts organized by computational task. Each subdirectory holds scripts and auxiliary files for a specific type of analysis.
 
-## File List
+## 📁 Subdirectories
 
-| Filename | Type | Description |
-| :--- | :--- | :--- |
-| `md_0_1.xtc` | Trajectory | MD simulation trajectory file (GROMACS format) |
-| `mmpbsa_perframe.csv` | Analysis | Per-frame MM/GBSA binding free energy calculations |
-| `summary_mmpbsa.xlsx` | Summary | Mean and standard deviation of MM/GBSA results across systems |
+| Directory | Purpose |
+|-----------|---------|
+| `Cluster_analysis` | Clustering of MD conformations (e.g., by RMSD or dihedral space) |
+| `Energetically_important_sites_analysis` | Identification of key residues contributing to binding energy (e.g., via per-residue decomposition) |
+| `Histone_mutation_analysis` | Analysis of histone variant/mutation effects on dynamics or interactions |
+| `Jaccard_similarity_analysis` | Quantification of residue contact similarity between systems |
+| `MMGBSA_calculation` | Scripts for running and post-processing MM/GBSA binding free energy calculations |
+| `RMSD_analysis` | Root-mean-square deviation (RMSD) trajectory analysis and plotting |
+| `RMSF_analysis` | Root-mean-square fluctuation (RMSF) per-residue flexibility analysis |
+| `SASA_calculation` | Solvent-accessible surface area (SASA) calculation and interpretation |
+| `hbond_analysis` | Hydrogen bond detection, lifetime, and occupancy analysis |
 
-## Usage Notes
+## 📝 Notes
 
-- **Trajectory files**: Must be loaded with the corresponding topology file (`.tpr` / `.gro`). Recommended viewers: VMD or PyMOL.
-- **CSV data**: Can be read directly with pandas / R. Column definitions are documented in the analysis scripts under `../Scripts_for_analyses/`.
-- **Excel summary**: Contains multiple sheets, each corresponding to a different protein–ligand system.
+- All scripts are assumed to be executable (e.g., Python, Bash, or R) and may require dependencies listed in their respective directories (e.g., `requirements.txt` or `install.R`).
+- Input data (trajectories, topologies, etc.) are expected to reside in [`../Source_data/`](../Source_data/).
+- For usage details, please inspect the individual subdirectories.
 
-## Related Resources
-
-- Analysis scripts: [Scripts_for_analyses](../Scripts_for_analyses/)
-- Simulation parameters: [Simulations_set_up](../Simulations_set_up/)
+> 🔍 **Tip**: To view contents of a specific analysis module, navigate into its folder (e.g., `cd MMGBSA_calculation`).
