@@ -1,0 +1,26 @@
+##       Load the main parameter set.
+##
+##parm10 = loadamberparams parm10.dat
+##frcmod14SB = loadamberparams frcmod.ff14SB
+source leaprc.protein.ff14SB
+source leaprc.DNA.OL15
+source leaprc.water.opc
+source leaprc.gaff2
+
+loadOff terminal_monophosphate.lib
+#
+# assume that most often proteins use HIE
+#
+NHIS = NHIE
+HIS = HIE
+CHIS = CHIE
+
+
+com = loadPDB wt_com.pdb
+nuc = loadPDB wt_nuc.pdb
+#bp = loadPDB wt_bp.pdb
+set default PBRadii mbondi2
+saveAmberParm com wt_com.prmtop wt_com.inpcrd
+saveAmberParm nuc wt_nuc.prmtop wt_nuc.inpcrd
+#saveAmberParm bp wt_bp.prmtop wt_bp.inpcrd
+quit
