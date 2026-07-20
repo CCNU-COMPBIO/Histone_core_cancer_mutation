@@ -6,14 +6,14 @@ This directory contains modular analysis scripts organized by computational task
 
 | Directory | Purpose |
 |-----------|---------|
-| `Cluster_analysis` | Clustering of MD conformations (e.g., by RMSD or dihedral space) |
-| `Energetically_important_sites_analysis` | Identification of key residues contributing to binding energy (e.g., via per-residue decomposition) |
-| `Histone_mutation_analysis` | Analysis of histone variant/mutation effects on dynamics or interactions |
-| `Jaccard_similarity_analysis` | Quantification of residue contact similarity between systems |
+| `Cluster_analysis` | Clustering analysis targeting energetically important residues and mutation hotspots |
+| `Energetically_important_sites_analysis` | Identification and characterization of energetically important residues |
+| `Histone_mutation_analysis` | Analysis of histone mutations in core regions, including mutation frequency and charge changes |
+| `Jaccard_similarity_analysis` | Jaccard similarity analysis for comparing residue contact or interaction patterns |
 | `MMGBSA_calculation` | Scripts for running and post-processing MM/GBSA binding free energy calculations |
 | `RMSD_analysis` | Root-mean-square deviation (RMSD) trajectory analysis and plotting |
 | `RMSF_analysis` | Root-mean-square fluctuation (RMSF) per-residue flexibility analysis |
-| `SASA_calculation` | Solvent-accessible surface area (SASA) calculation and interpretation |
+| `SASA_calculation` | Solvent-accessible surface area (SASA) calculation|
 | `hbond_analysis` | Hydrogen bond detection, lifetime, and occupancy analysis |
 
 ## Notes
