@@ -2,7 +2,7 @@
 
 This directory contains modular analysis scripts organized by computational task. Each subdirectory holds scripts and auxiliary files for a specific type of analysis.
 
-## 📁 Subdirectories
+## Subdirectories
 
 | Directory | Purpose |
 |-----------|---------|
@@ -16,10 +16,6 @@ This directory contains modular analysis scripts organized by computational task
 | `SASA_calculation` | Solvent-accessible surface area (SASA) calculation and interpretation |
 | `hbond_analysis` | Hydrogen bond detection, lifetime, and occupancy analysis |
 
-## 📝 Notes
+## Notes
 
-- All scripts are assumed to be executable (e.g., Python, Bash, or R) and may require dependencies listed in their respective directories (e.g., `requirements.txt` or `install.R`).
 - Input data (trajectories, topologies, etc.) are expected to reside in [`../Source_data/`](../Source_data/).
-- For usage details, please inspect the individual subdirectories.
-
-> 🔍 **Tip**: To view contents of a specific analysis module, navigate into its folder (e.g., `cd MMGBSA_calculation`).
