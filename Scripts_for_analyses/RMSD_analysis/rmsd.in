@@ -1,0 +1,14 @@
+parm ../WT_rw.prmtop
+trajin WT_rw_run3_500ns.nc
+autoimage
+
+rms first :1-753@C,CA,N,O
+rms Nucleosome first :1-1045@C,CA,N,O,P,O3',O5',C3',C4' out rmsd_ncp.dat
+rms DNA first :754-1045@P,O3',O5',C3',C4' out rmsd_DNA.dat
+rms Histone first :1-753@C,CA,N,O out rmsd_histone.dat
+
+rms chain_A first :1-97@C,CA,N,O out rmsd_chain_A.dat
+rms chain_C first :176-280@C,CA,N,O out rmsd_chain_C.dat
+rms chain_D first :281-376@C,CA,N,O out rmsd_chain_D.dat
+
+run
