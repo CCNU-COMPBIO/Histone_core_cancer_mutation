@@ -97,7 +97,7 @@ def plot_single_mutant(df_plot, y_order, title, filename):
 # ==========================================
 # 3. Main workflow
 # ==========================================
-csv_path = "rmsf_symmetry_correlation.csv"
+csv_path = "RMSF_symmetry_correlation.csv"
 df_raw = pd.read_csv(csv_path)
 
 # --- Add WT row per system if missing (using new column names) ---
