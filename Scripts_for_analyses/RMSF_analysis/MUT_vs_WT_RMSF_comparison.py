@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Compare RMSF profiles between mutant systems and wild-type for specific histone chains.
-Generates line plots with standard deviation bands and exports delta tables.
-"""
-
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -18,7 +13,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = ['Arial']
 
-# ========== PATHS AND RUN PARAMETERS ==========
+# ========== Paths and run parameters ==========
 BASE_DIR = Path(__file__).resolve().parent
 RUNS = ["run1", "run2", "run3"]
 SEQUENCE_CSV = "sequence.csv"
@@ -32,7 +27,7 @@ CHAIN_START = {
     "D": 30, "H": 33,
 }
 
-# ========== MUTANT SYSTEM MAPPING ==========
+# ========== Mutant system mapping ==========
 MUTATION_MAP = {
     "R29Q":  {"histone": "H2A", "chain": "C", "x_resnum": 29},
     "E56K":  {"histone": "H2A", "chain": "C", "x_resnum": 56},
@@ -50,7 +45,7 @@ HISTONE_CHAIN_PAIRS = {
     "H2B": ("C", "D"),
 }
 
-# Actual histone type for each chain (used to build RMSF filenames)
+# Mapping from chain ID to histone name (used for RMSF file naming)
 CHAIN_TO_HISTONE = {
     "A": "H3", "B": "H4",
     "C": "H2A", "D": "H2B",
@@ -58,13 +53,14 @@ CHAIN_TO_HISTONE = {
     "G": "H2A", "H": "H2B",
 }
 
-PLOT_STD_BAND = True
+PLOT_SEM_BAND = True   # Plot mean ± SEM shaded band
 DPI = 600
 DIFF_THRESHOLD = 0.5
 
 
-# ========== UTILITY FUNCTIONS ==========
+# ========== Utility functions ==========
 def read_sequence_csv(path: Path) -> pd.DataFrame:
+    """Read sequence CSV with automatic encoding detection."""
     encodings = ["utf-8", "utf-8-sig", "gbk", "cp936", "latin1"]
     last = None
     for enc in encodings:
@@ -95,6 +91,7 @@ def read_sequence_csv(path: Path) -> pd.DataFrame:
 
 
 def build_chain_res_to_pos(seq_df: pd.DataFrame, chain_id: str) -> pd.DataFrame:
+    """Map residue numbers to sequential positions (1‑based) for a given chain."""
     sub = seq_df[seq_df["Chain"] == chain_id].copy()
     if sub.empty:
         chains = sorted(seq_df["Chain"].unique().tolist())
@@ -105,6 +102,7 @@ def build_chain_res_to_pos(seq_df: pd.DataFrame, chain_id: str) -> pd.DataFrame:
 
 
 def read_cpptraj_rmsf(path: Path) -> pd.DataFrame:
+    """Read a cpptraj RMSF file (two columns: Res and RMSF)."""
     df = pd.read_csv(path, comment="#", delim_whitespace=True, header=None,
                      names=["Res", "RMSF"], dtype={"Res": float, "RMSF": float})
     if df.empty:
@@ -115,8 +113,8 @@ def read_cpptraj_rmsf(path: Path) -> pd.DataFrame:
 
 def load_system_chain_runs(system, file_histone, chain, res_to_pos, start_index):
     """
-    file_histone: histone name used to construct the RMSF filename
-                  (may differ from the mutation's histone)
+    Load RMSF data for all runs of a given system and chain.
+    file_histone: the histone name used in the RMSF filename (may differ from the chain's own histone).
     """
     per_run = []
     for run in RUNS:
@@ -134,6 +132,7 @@ def load_system_chain_runs(system, file_histone, chain, res_to_pos, start_index)
 
 
 def align_and_stack(series_list):
+    """Align multiple (x,y) series to a common x‑axis (intersection) and return a Y matrix."""
     sets = [set(x.tolist()) for x, _ in series_list]
     common = sorted(set.intersection(*sets))
     if not common:
@@ -150,24 +149,32 @@ def align_and_stack(series_list):
 
 
 def summarize_runs(per_run):
+    """Compute common x‑axis, mean, and standard error of the mean (SEM) across runs."""
     common_x, Y = align_and_stack(per_run)
+    n_runs = Y.shape[0]
     mean = Y.mean(axis=0)
-    std = Y.std(axis=0, ddof=1) if Y.shape[0] > 1 else np.zeros_like(mean)
-    return common_x, mean, std
+    std = Y.std(axis=0, ddof=1) if n_runs > 1 else np.zeros_like(mean)
+    sem = std / np.sqrt(n_runs)
+    return common_x, mean, sem
 
 
 def compute_system_mean_for_chain(system, chain_id, res_to_pos):
-    """Determine the histone type for the RMSF filename based on the chain."""
+    """
+    Load RMSF data for a system and chain, returning x, mean, and SEM.
+    The histone name used in the file name is automatically determined from CHAIN_TO_HISTONE.
+    """
     file_histone = CHAIN_TO_HISTONE[chain_id]
     per_run = load_system_chain_runs(system, file_histone, chain_id, res_to_pos, CHAIN_START[chain_id])
-    return summarize_runs(per_run)
+    return summarize_runs(per_run)   # (x, mean, sem)
 
 
 def x_to_pos(chain_start, x_resnum):
+    """Convert global X residue index to sequential position within chain."""
     return int(x_resnum - chain_start + 1)
 
 
 def annotate_single_mutation(ax, mut_name, mut_info, chain_id, res_to_pos, y_map):
+    """Mark the mutation site on the RMSF curve if it belongs to this chain."""
     if mut_info["chain"] != chain_id:
         return
     chain_start = CHAIN_START[chain_id]
@@ -188,6 +195,7 @@ def annotate_single_mutation(ax, mut_name, mut_info, chain_id, res_to_pos, y_map
 
 
 def diff_table_for_chain(chain_id, res_to_pos, sys_a, sys_b):
+    """Compute RMSF differences (sys_b - sys_a) for all common residues."""
     x_a, mean_a, _ = compute_system_mean_for_chain(sys_a, chain_id, res_to_pos)
     x_b, mean_b, _ = compute_system_mean_for_chain(sys_b, chain_id, res_to_pos)
     common = np.intersect1d(x_a, x_b)
@@ -210,6 +218,7 @@ def diff_table_for_chain(chain_id, res_to_pos, sys_a, sys_b):
 
 
 def print_diff_hits(df, threshold, label):
+    """Print residues where absolute RMSF difference exceeds the threshold."""
     hits = df[df["RMSF_delta_abs"] >= float(threshold)].copy()
     if hits.empty:
         print(f"[INFO] [{label}] No sites with |RMSF_delta| >= {threshold}")
@@ -220,7 +229,7 @@ def print_diff_hits(df, threshold, label):
         print(f"  Chain {r['chain']}  resid={int(r['resid'])}  RMSF_delta={r['RMSF_delta']:.3f}  (abs={r['RMSF_delta_abs']:.3f})")
 
 
-# ========== MAIN PIPELINE ==========
+# ========== Main workflow ==========
 def main():
     seq_path = BASE_DIR / SEQUENCE_CSV
     if not seq_path.exists():
@@ -239,7 +248,6 @@ def main():
             print(f"[WARN] No chain pair defined for {histone}, skipping {mut_name}.")
             continue
 
-        # Fixed chain pairs: H3->(A,B), H2A/H2B->(C,D)
         chain1, chain2 = HISTONE_CHAIN_PAIRS[histone]
         print(f"\n{'='*60}")
         print(f"Processing: {display_label} ({mut_system}) | chains: {chain1}, {chain2}")
@@ -261,12 +269,11 @@ def main():
             res_to_pos = chain_to_res_to_pos[chain_id]
             file_histone = CHAIN_TO_HISTONE[chain_id]
 
-            # --- Difference statistics ---
+            # --- Difference table ---
             try:
                 df_diff = diff_table_for_chain(chain_id, res_to_pos,
                                                sys_a=WT_SYSTEM, sys_b=mut_system)
 
-                # Rename columns to standard names
                 df_diff.rename(columns={
                     "Chain": "chain",
                     "X": "resid",
@@ -276,10 +283,8 @@ def main():
                     "abs_diff": "RMSF_delta_abs"
                 }, inplace=True)
 
-                # Print delta hits
                 print_diff_hits(df_diff, DIFF_THRESHOLD, display_label)
 
-                # Save CSV (4 decimals)
                 out_csv = BASE_DIR / f"RMSF_delta_{histone}{mut_name}_chain{chain_id}.csv"
                 df_diff.to_csv(out_csv, index=False, float_format='%.4f')
                 print(f"[OK] Saved diff table: {out_csv}")
@@ -296,7 +301,7 @@ def main():
                 (mut_system, color_mut, "--", display_label),
             ]:
                 try:
-                    x, mean, std = compute_system_mean_for_chain(
+                    x, mean, sem = compute_system_mean_for_chain(
                         system, chain_id, res_to_pos)
                 except Exception as e:
                     print(f"[ERROR] Cannot load {system} chain {chain_id} (file: {file_histone}): {e}")
@@ -306,8 +311,8 @@ def main():
                 ax.plot(x, mean, color=color, linestyle=ls, linewidth=2.0,
                         label=legend_label)
 
-                if PLOT_STD_BAND and len(RUNS) > 1:
-                    ax.fill_between(x, mean - std, mean + std,
+                if PLOT_SEM_BAND and len(RUNS) > 1:
+                    ax.fill_between(x, mean - sem, mean + sem,
                                     color=color, alpha=0.20, linewidth=0)
 
             if mut_system in mean_by_system:
