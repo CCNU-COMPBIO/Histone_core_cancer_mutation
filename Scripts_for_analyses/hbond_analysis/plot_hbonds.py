@@ -1,33 +1,25 @@
-"""
-Plot hydrogen bond counts (mutated side only) from Excel data.
-Individual run values are overlaid as scatter points.
-"""
-
 from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
-# ---- Input / Output ----
-excel_path = "hbond_result.xlsx"
+# Parameters
+excel_path = "hdond_result.xlsx"
 sheet_name = "hbonds-50"
 
 mut_side_chains = ["chainA-chainB", "chainC-chainD", "chainA-DNA", "chainC-DNA"]
 OUT_MUT = "hbonds_mutated_side.png"
 DPI = 600
 
-# ---- Bar plot settings ----
 CHAIN_GROUP_GAP = 2.2
 BAR_WIDTH = 0.28
 EDGE_LW = 1.0
 CAPSIZE = 4
 
-# System label placed below the x‑axis (axes coordinates)
-SYSTEM_LABEL_Y_AXES = -0.02   # negative = below axis
+SYSTEM_LABEL_Y_AXES = -0.02   # axes coordinates: negative is below x-axis
 SYSTEM_LABEL_ROT = 90
 
-# Overlay scatter points for individual runs
 SHOW_RUN_POINTS = True
 POINT_SIZE = 35
 POINT_ALPHA = 0.95
@@ -35,11 +27,10 @@ POINT_EDGE = "black"
 POINT_LW = 1.0
 POINT_JITTER = 0.06
 
-DRAW_LEGEND = True   # show chain legend inside plot
-
+DRAW_LEGEND = True
 RUN_COLS = ["run1", "run2", "run3"]
 
-# ---- Font settings (Arial) ----
+# Font settings
 plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["font.sans-serif"] = ["Arial"]
 plt.rcParams["axes.unicode_minus"] = False
@@ -51,13 +42,30 @@ SYSTEM_LABEL_FONTSIZE = 18
 LEGEND_FONTSIZE = 18
 LEGEND_TITLE_FONTSIZE = 18
 
-# ---- Read data and compute mean/SEM from runs ----
+# Chain display name mapping (supports composite names)
+def map_display_name(raw_name: str) -> str:
+    """
+    Convert chainA→H3, chainB→H4, chainC→H2A, chainD→H2B.
+    Also handles composites like "chainA-chainB" → "H3-H4".
+    """
+    mapping = {
+        "chainA": "H3",
+        "chainB": "H4",
+        "chainC": "H2A",
+        "chainD": "H2B",
+    }
+    result = raw_name
+    for old, new in mapping.items():
+        result = result.replace(old, new)
+    return result
+
+# Read data and compute mean/SEM
 df = pd.read_excel(excel_path, sheet_name=sheet_name)
 
 required_cols = {"chain", "system", *RUN_COLS}
 missing = required_cols - set(df.columns)
 if missing:
-    raise ValueError(f"Missing columns: {missing}. Actual: {list(df.columns)}")
+    raise ValueError(f"Excel missing columns: {missing}. Actual columns: {list(df.columns)}")
 
 df = df.dropna(subset=["chain", "system"]).copy()
 df["chain"] = df["chain"].astype(str).str.strip()
@@ -76,7 +84,7 @@ sem[n < 2] = np.nan
 df["SEM_calc"] = sem
 df = df.dropna(subset=["mean_calc"])
 
-# ---- Color mapping for chains (Set2 / Pastel1) ----
+# Color scheme
 def chain_color_map(chains):
     cmap_primary = plt.get_cmap("Set2")
     cmap_fallback = plt.get_cmap("Pastel1")
@@ -88,11 +96,11 @@ def chain_color_map(chains):
             colors[ch] = cmap_fallback(i % cmap_fallback.N)
     return colors
 
-# ---- Main plotting function ----
-def plot_side(data, chains_order, title, out_png):
+# Plotting function (mutated side only)
+def plot_side(data: pd.DataFrame, chains_order, title: str, out_png: str):
     data = data[data["chain"].isin(chains_order)].copy()
     if data.empty:
-        raise ValueError(f"No data for chains: {chains_order}")
+        raise ValueError(f"No data found for chains: {chains_order}")
 
     data["chain"] = pd.Categorical(data["chain"], categories=chains_order, ordered=True)
     data = data.sort_values(["chain", "system"])
@@ -108,13 +116,12 @@ def plot_side(data, chains_order, title, out_png):
         if sub.empty:
             continue
 
-        # Ensure no duplicate (chain, system) entries
         dup = sub.duplicated(subset=["chain", "system"], keep=False)
         if dup.any():
             dups = sub.loc[dup, ["chain", "system"]].drop_duplicates()
             raise ValueError(
-                "Duplicate (chain, system) rows found. Please aggregate first.\n"
-                f"Examples:\n{dups.to_string(index=False)}"
+                "Duplicate (chain, system) entries found; aggregation required.\n"
+                f"Example duplicates:\n{dups.to_string(index=False)}"
             )
 
         systems = sorted(sub["system"].unique().tolist())
@@ -139,7 +146,6 @@ def plot_side(data, chains_order, title, out_png):
                 zorder=1
             )
 
-            # Scatter points for individual runs
             if SHOW_RUN_POINTS:
                 run_vals = row[RUN_COLS].to_numpy(dtype=float)
                 run_vals = run_vals[~np.isnan(run_vals)]
@@ -156,7 +162,7 @@ def plot_side(data, chains_order, title, out_png):
                         zorder=3
                     )
 
-            # System label below the x‑axis
+            # System label below bar
             ax.text(
                 x, SYSTEM_LABEL_Y_AXES, sys,
                 transform=ax.get_xaxis_transform(),
@@ -168,7 +174,7 @@ def plot_side(data, chains_order, title, out_png):
                 zorder=4
             )
 
-    # Axis styling
+    # Thicken spines
     for spine in ax.spines.values():
         spine.set_linewidth(2)
         spine.set_color('black')
@@ -176,20 +182,21 @@ def plot_side(data, chains_order, title, out_png):
     ax.set_title(title, fontsize=TITLE_FONTSIZE, weight='bold', pad=12)
     ax.set_ylabel("Number of H-bonds", fontsize=YLABEL_FONTSIZE, weight='bold', labelpad=10)
 
-    # Hide x‑tick labels (chain names are shown in legend)
+    # Hide x-tick labels (legend will describe the chains)
     ax.set_xticks(group_centers)
     ax.set_xticklabels([""] * len(chains_present))
 
     ax.tick_params(axis='y', labelsize=YTICK_FONTSIZE)
     ax.grid(axis="y", linestyle="--", alpha=0.35, zorder=0)
 
-    # Start y‑axis at 0
     ymax = ax.get_ylim()[1]
     ax.set_ylim(0, ymax)
 
-    # Chain legend (upper right)
+    # Legend using mapped display names
     if DRAW_LEGEND:
-        handles = [Patch(facecolor=colors[ch], edgecolor="black", label=ch) for ch in chains_present]
+        display_labels = [map_display_name(ch) for ch in chains_present]
+        handles = [Patch(facecolor=colors[ch], edgecolor="black", label=display_labels[i])
+                   for i, ch in enumerate(chains_present)]
         ax.legend(
             handles=handles,
             loc="upper right",
@@ -201,6 +208,6 @@ def plot_side(data, chains_order, title, out_png):
     fig.savefig(out_png, dpi=DPI, bbox_inches="tight")
     plt.close(fig)
 
-# ---- Generate plot ----
+# Generate plot (mutated side only)
 plot_side(df, mut_side_chains, "Average number of hydrogen bonds (Mutated side)", OUT_MUT)
-print(f"Done. Saved: {OUT_MUT}")
+print(f"Done. Saved:\n- {OUT_MUT}")
