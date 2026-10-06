@@ -11,6 +11,7 @@ SYSTEMS = [
     ("H2AR29Q",  "R29Q_rw"),
     ("H2AE56K",  "E56K_rw"),
     ("H2AK74N",  "K74N_rw"),
+    ("H2BE105K",  "H2BE105K_rw"),
     ("H2BF70L",  "F70L_rw"),
     ("H3E50K",   "E50K_rw"),
     ("H3E73K",   "E73K_rw"),
@@ -21,13 +22,13 @@ SYSTEMS = [
 RUNS = ["run1", "run2", "run3"]
 ENDS = ["end1", "end2"]
 THRESHOLDS = [10.0, 12.0]
-MIN_CONSEC = 15          # consecutive frames, 1 ns per frame
+MIN_CONSEC = 15          # consecutive frames; each frame is 1 ns
 
 OUT_CSV = BASE_DIR / "unwrapping_all_systems.csv"
 
 # ========== Utility functions ==========
 def frame_to_ns(frame):
-    """Output frame 1 -> 100.02 ns; then each frame +1 ns"""
+    """Output frame 1 -> 100.02 ns; each subsequent frame adds 1 ns."""
     return 100.02 + (frame - 1) * 1.0
 
 def read_rmsd(path):
@@ -38,8 +39,7 @@ def read_rmsd(path):
     return times, rmsd
 
 def find_persistent_segments(times, rmsd, threshold, min_consec=MIN_CONSEC):
-    """Segments with consecutive >= min_consec frames where RMSD > threshold:
-    [(start_ns, end_ns, n_frames), ...]"""
+    """Segments where RMSD > threshold for >= min_consec consecutive frames: [(start_ns, end_ns, n_frames), ...]"""
     above = rmsd > threshold
     segments = []
     count = 0
