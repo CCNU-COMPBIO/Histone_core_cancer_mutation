@@ -1,0 +1,13 @@
+Found 11 hbonds.
+donor 		 acceptor 	 occupancy
+LYS218-Main 	 ALA214-Main 	 81.05%
+LYS218-Side 	 LEU185-Main 	 38.65%
+ALA222-Main 	 LYS218-Main 	 67.33%
+LYS218-Side 	 ALA214-Main 	 0.75%
+LYS218-Side 	 ALA215-Main 	 1.00%
+LYS218-Side 	 LEU185-Side 	 0.25%
+THR221-Side 	 LYS218-Main 	 5.74%
+VAL295-Side 	 LYS218-Main 	 0.25%
+LYS218-Side 	 GLN298-Side 	 1.00%
+LYS218-Side 	 GLU364-Side 	 3.49%
+LYS218-Side 	 TYR219-Main 	 0.25%
