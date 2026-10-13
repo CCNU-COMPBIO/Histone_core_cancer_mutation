@@ -1,0 +1,7 @@
+Found 5 hbonds.
+donor 		 acceptor 	 occupancy
+ALA325-Main 	 LEU321-Main 	 90.27%
+LEU321-Main 	 VAL317-Main 	 71.57%
+LEU321-Side 	 VAL317-Main 	 0.50%
+LEU321-Side 	 ASN318-Main 	 4.74%
+ILE324-Side 	 LEU321-Main 	 0.25%

@@ -1,0 +1,11 @@
+Found 9 hbonds.
+donor 		 acceptor 	 occupancy
+LYS68-Main 	 VAL64-Main 	 59.85%
+ARG469-Side 	 LYS68-Main 	 0.25%
+LEU72-Main 	 LYS68-Main 	 26.18%
+LEU72-Side 	 LYS68-Main 	 6.23%
+LYS68-Side 	 ASN653-Side 	 1.75%
+LYS68-Main 	 GLY114-Main 	 0.25%
+LYS68-Side 	 GLY65-Main 	 2.74%
+LYS68-Side 	 VAL64-Main 	 1.50%
+ASN71-Side 	 LYS68-Main 	 0.50%

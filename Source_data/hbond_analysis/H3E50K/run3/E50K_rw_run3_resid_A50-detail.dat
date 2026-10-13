@@ -1,0 +1,13 @@
+Found 11 hbonds.
+donor 		 acceptor 	 occupancy
+LYS13-Main 	 VAL9-Main 	 83.54%
+TYR17-Main 	 LYS13-Main 	 93.27%
+ARG16-Side 	 LYS13-Main 	 2.99%
+LYS13-Side 	 TYR17-Side 	 1.25%
+LYS13-Side 	 VAL9-Main 	 0.75%
+LYS13-Side 	 VAL9-Side 	 1.00%
+ARG112-Side 	 LYS13-Main 	 0.25%
+LYS13-Side 	 ALA10-Main 	 0.25%
+TYR17-Side 	 LYS13-Main 	 0.75%
+LYS13-Side 	 DG982-Side 	 0.75%
+LYS13-Side 	 ARG16-Side 	 0.25%
