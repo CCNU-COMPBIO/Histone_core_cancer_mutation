@@ -1,0 +1,13 @@
+Found 11 hbonds.
+donor 		 acceptor 	 occupancy
+GLU218-Main 	 ALA214-Main 	 83.25%
+PHE187-Main 	 GLU218-Side 	 88.00%
+GLN186-Main 	 GLU218-Side 	 91.00%
+ALA222-Main 	 GLU218-Main 	 44.75%
+LEU185-Main 	 GLU218-Side 	 2.25%
+LEU185-Side 	 GLU218-Side 	 1.00%
+GLN186-Side 	 GLU218-Side 	 1.75%
+PHE187-Side 	 GLU218-Side 	 3.50%
+GLN298-Side 	 GLU218-Side 	 1.50%
+GLU218-Side 	 PHE187-Side 	 0.25%
+GLU218-Side 	 ALA215-Main 	 0.50%

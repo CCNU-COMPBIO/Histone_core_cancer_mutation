@@ -1,0 +1,9 @@
+Found 7 hbonds.
+donor 		 acceptor 	 occupancy
+HIE360-Main 	 GLU356-Main 	 24.50%
+HIE360-Side 	 GLU356-Side 	 3.50%
+LYS359-Side 	 GLU356-Side 	 22.00%
+LYS359-Side 	 GLU356-Main 	 5.00%
+HIE360-Side 	 GLU356-Main 	 1.75%
+GLU356-Main 	 GLU254-Side 	 0.50%
+GLU356-Side 	 GLU254-Side 	 0.25%
