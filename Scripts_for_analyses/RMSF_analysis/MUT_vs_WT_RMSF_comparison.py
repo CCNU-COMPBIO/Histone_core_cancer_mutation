@@ -2,17 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 RMSF_wt_vs_mut - windows.py
-Per-residue RMSF comparison between WT and mutants + difference statistics.
+Per-residue RMSF comparison (WT vs mutant) with delta statistics.
 
-Two variants, generated in one run:
-  Variant A "excluded": all systems x run1-run3, reads rmsf-<H>_chain_<C>.dat, output name without suffix
-  Variant B "no-exclusion": only processes runs that actually have _noexcl files (K74N run1, F70L run3),
-                 reads rmsf-<H>_chain_<C>_noexcl.dat, output name with _noexcl
-                 -- systems with no excluded segments and not recomputed are skipped in Variant B,
-                    no duplicate computation, no duplicate plots.
-WT has no excluded segments, so both variants use the regular files.
+Two variants are produced in a single run:
+  Variant A "excluded": all systems x run1-run3, reads rmsf-<H>_chain_<C>.dat,
+                        outputs have no suffix.
+  Variant B "noexcl":  only runs that actually have _noexcl files (K74N run1,
+                        F70L run3), reads rmsf-<H>_chain_<C>_noexcl.dat,
+                        outputs suffixed with _noexcl.
+                        Systems without re-computed trajectories are skipped
+                        (no duplicate computation or plots).
+WT has no excluded segments and uses regular files in both variants.
 
-Folder naming is unified as: <histone>_<mutation>_rw, e.g. H2B_E105K_rw.
+Folder naming: <histone>_<mutation>_rw, e.g. H2B_E105K_rw.
 """
 
 from pathlib import Path
@@ -32,7 +34,7 @@ SEQUENCE_CSV = "sequence.csv"
 WT_SYSTEM = "WT_rw"
 NOEXCL = "_noexcl"
 
-# ★ Variant definitions: mode="regular" reads regular files; mode="noexcl" reads only _noexcl files ★
+# Variant definition: mode="regular" reads regular files; mode="noexcl" reads _noexcl files.
 VARIANTS = [
     {"mode": "regular", "out_suffix": "",     "label": "excluded segments"},
     {"mode": "noexcl",  "out_suffix": NOEXCL, "label": "no excluded segments"},
@@ -45,8 +47,7 @@ CHAIN_START = {
     "D": 30, "H": 33,
 }
 
-# ★ Folder names are already unified as H2A_R29Q_rw format ★
-#   key is the folder name without "_rw"
+# Folder names already use the H2A_R29Q_rw convention; the key is the folder name without "_rw".
 MUTATION_MAP = {
     "H2A_R29Q":  {"histone": "H2A", "mutation": "R29Q",  "chain": "C", "x_resnum": 29},
     "H2A_E56K":  {"histone": "H2A", "mutation": "E56K",  "chain": "C", "x_resnum": 56},
@@ -131,7 +132,7 @@ def read_cpptraj_rmsf(path: Path) -> pd.DataFrame:
 
 
 def runs_with_noexcl(system) -> list:
-    """Return which runs actually have _noexcl files for this system (probe using H3 chain A)."""
+    """Return the runs that actually contain _noexcl files (probed via H3 chain A)."""
     found = []
     for run in RUNS:
         probe = BASE_DIR / system / run / f"rmsf-H3_chain_A{NOEXCL}.dat"
@@ -189,6 +190,15 @@ def summarize_runs(per_run):
     return common_x, mean, std / np.sqrt(n_runs)
 
 
+def compute_system_mean_sem_for_chain(system, chain_id, res_to_pos, mode, runs):
+    """Return (X, mean, SEM). SEM = per-residue SD over runs / sqrt(n_runs)."""
+    file_histone = CHAIN_TO_HISTONE[chain_id]
+    per_run = load_system_chain_runs(
+        system, file_histone, chain_id, res_to_pos, CHAIN_START[chain_id], mode, runs)
+    common_x, mean, sem = summarize_runs(per_run)
+    return common_x, mean, sem
+
+
 def compute_system_mean_for_chain(system, chain_id, res_to_pos, mode, runs):
     file_histone = CHAIN_TO_HISTONE[chain_id]
     per_run = load_system_chain_runs(
@@ -216,10 +226,10 @@ def annotate_single_mutation(ax, mut_label, mut_info, chain_id, res_to_pos, y_ma
 
 def diff_table_for_chain(chain_id, res_to_pos, sys_a, sys_b,
                          mode_a, mode_b, runs_a, runs_b):
-    x_a, mean_a, _ = compute_system_mean_for_chain(sys_a, chain_id, res_to_pos,
-                                                   mode_a, runs_a)
-    x_b, mean_b, _ = compute_system_mean_for_chain(sys_b, chain_id, res_to_pos,
-                                                   mode_b, runs_b)
+    x_a, mean_a, sem_a = compute_system_mean_sem_for_chain(
+        sys_a, chain_id, res_to_pos, mode_a, runs_a)
+    x_b, mean_b, sem_b = compute_system_mean_sem_for_chain(
+        sys_b, chain_id, res_to_pos, mode_b, runs_b)
     common = np.intersect1d(x_a, x_b)
     if common.size == 0:
         raise ValueError(f"No common X between {sys_a} and {sys_b} "
@@ -229,12 +239,20 @@ def diff_table_for_chain(chain_id, res_to_pos, sys_a, sys_b,
     idx_b = {int(x): i for i, x in enumerate(x_b)}
     rows = []
     for x in common:
-        wt = float(mean_a[idx_a[int(x)]])
-        mut = float(mean_b[idx_b[int(x)]])
+        i, j = idx_a[int(x)], idx_b[int(x)]
+        wt, mut = float(mean_a[i]), float(mean_b[j])
+        wt_sem, mut_sem = float(sem_a[i]), float(sem_b[j])
+        delta = mut - wt
+        # SEM of the difference via error propagation: sqrt(sem_wt^2 + sem_mut^2)
+        delta_sem = float(np.sqrt(wt_sem ** 2 + mut_sem ** 2))
         rows.append({
             "chain": chain_id, "resid": int(x),
-            f"{sys_a}_mean": wt, f"{sys_b}_mean": mut,
-            "diff": mut - wt, "abs_diff": abs(mut - wt),
+            f"{sys_a}_mean": wt, f"{sys_a}_sem": wt_sem,
+            f"{sys_b}_mean": mut, f"{sys_b}_sem": mut_sem,
+            "diff": delta, "abs_diff": abs(delta),
+            "diff_sem": delta_sem,
+            # |diff| / diff_SEM (useful for picking key sites)
+            "abs_diff_over_sem": abs(delta) / delta_sem if delta_sem > 0 else np.nan,
         })
     return pd.DataFrame(rows).sort_values("resid").reset_index(drop=True)
 
@@ -247,11 +265,14 @@ def print_diff_hits(df, threshold, label):
     hits = hits.sort_values("RMSF_delta_abs", ascending=False)
     print(f"\n[DIFF] [{label}] Sites with |RMSF_delta| >= {threshold}")
     for _, r in hits.iterrows():
+        z = r.get("RMSF_delta_over_sem", float("nan"))
+        z_str = f"  |delta|/SEM={z:.2f}" if pd.notna(z) else ""
         print(f"  Chain {r['chain']}  resid={int(r['resid'])}  "
-              f"RMSF_delta={r['RMSF_delta']:.3f}  (abs={r['RMSF_delta_abs']:.3f})")
+              f"RMSF_delta={r['RMSF_delta']:.3f}  (abs={r['RMSF_delta_abs']:.3f})"
+              f"{z_str}")
 
 
-# ========== Main workflow ==========
+# ========== Main ==========
 def main():
     seq_path = BASE_DIR / SEQUENCE_CSV
     if not seq_path.exists():
@@ -261,13 +282,13 @@ def main():
     color_wt, color_mut = pal[0], pal[1]
 
     print("=" * 68)
-    print("[Variant B scan] Which runs have _noexcl files (only these runs will use Variant B)")
+    print("Variant B scan: runs that contain _noexcl files (only these go through variant B)")
     noexcl_map = {}
     for mut_id in MUTATION_MAP:
         sys_name = f"{mut_id}_rw"
         r = runs_with_noexcl(sys_name)
         noexcl_map[sys_name] = r
-        print(f"  {sys_name:15s} -> {r if r else '(none, Variant B skipped)'}")
+        print(f"  {sys_name:15s} -> {r if r else '(none; variant B skipped)'}")
     print("=" * 68)
 
     for mut_id, mut_info in MUTATION_MAP.items():
@@ -276,7 +297,7 @@ def main():
 
         mut_system = f"{mut_id}_rw"              # e.g. H2B_E105K_rw
         display_label = f"{histone}{mutation}"   # e.g. H2BE105K
-        file_stem = mut_id                       # e.g. H2B_E105K (use key directly)
+        file_stem = mut_id                       # e.g. H2B_E105K (use the key directly)
 
         chain1, chain2 = HISTONE_CHAIN_PAIRS[histone]
 
@@ -292,12 +313,12 @@ def main():
             out_sfx = variant["out_suffix"]
             vlabel = variant["label"]
 
-            # ---------- Variant B only processes runs with _noexcl ----------
+            # Variant B only processes runs that have _noexcl files
             if mode == "noexcl":
                 mut_runs = noexcl_map.get(mut_system, [])
                 if not mut_runs:
-                    print(f"\n[SKIP-B] {display_label}: no _noexcl files, "
-                          f"Variant B will not recompute (same as Variant A)")
+                    print(f"\n[SKIP-B] {display_label}: no _noexcl files; "
+                          f"variant B skipped (identical to variant A)")
                     continue
                 wt_runs = list(mut_runs)
                 wt_mode = "regular"
@@ -319,7 +340,7 @@ def main():
                 res_to_pos = chain_to_res_to_pos[chain_id]
                 file_histone = CHAIN_TO_HISTONE[chain_id]
 
-                # ---------- Difference statistics ----------
+                # ---------- Delta statistics ----------
                 try:
                     df_diff = diff_table_for_chain(
                         chain_id, res_to_pos,
@@ -329,23 +350,27 @@ def main():
 
                     df_diff.rename(columns={
                         f"{WT_SYSTEM}_mean": "RMSF_WT",
+                        f"{WT_SYSTEM}_sem": "SEM_WT",
                         f"{mut_system}_mean": f"RMSF_{display_label}",
+                        f"{mut_system}_sem": f"SEM_{display_label}",
                         "diff": "RMSF_delta",
                         "abs_diff": "RMSF_delta_abs",
+                        "diff_sem": "RMSF_delta_sem",
+                        "abs_diff_over_sem": "RMSF_delta_over_sem",
                     }, inplace=True)
 
                     print_diff_hits(df_diff, DIFF_THRESHOLD,
                                     f"{display_label} [{vlabel}]")
 
                     out_csv = (BASE_DIR /
-                               f"RMSF_delta_{file_stem}_chain{chain_id}{out_sfx}.csv")
+                               f"RMSF_delta_{file_stem}_chain{chain_id}{out_sfx}_SEM.csv")
                     df_diff.to_csv(out_csv, index=False, float_format='%.4f')
                     print(f"  [OK] {out_csv.name}")
                 except Exception as e:
                     print(f"[ERROR] Diff failed for {display_label} chain {chain_id}: {e}")
                     continue
 
-                # ---------- Plotting ----------
+                # ---------- Plot ----------
                 fig, ax = plt.subplots(figsize=(8, 4))
                 mean_by_system = {}
 
@@ -367,7 +392,7 @@ def main():
                             linewidth=2.0, label=legend_label)
                     if PLOT_SEM_BAND and len(rr) > 1:
                         ax.fill_between(x, mean - sem, mean + sem,
-                                        color=color, alpha=0.20, linewidth=0)
+                                        color=color, alpha=0.3, linewidth=0)
 
                 if mut_system in mean_by_system:
                     x_curve, y_curve = mean_by_system[mut_system]
