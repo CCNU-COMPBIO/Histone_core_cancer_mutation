@@ -10,6 +10,4 @@ This repository contains supplementary data and analysis scripts for the study.
 
 ## Data Availability
 
-Simulation trajectories are deposited in the Science Data Center (SciDC), Nanjing University:
-
-<https://scidc.nju.edu.cn/records/xs1wj-a4a27>
+MD Trajectories are archived at: <https://scidc.nju.edu.cn/records/xs1wj-a4a27>
