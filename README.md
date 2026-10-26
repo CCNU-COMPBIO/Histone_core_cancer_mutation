@@ -10,4 +10,4 @@ This repository contains supplementary data and analysis scripts for the study.
 
 ## Data Availability
 
-MD Trajectories are archived at <https://scidc.nju.edu.cn/records/xs1wj-a4a27>
+MD Trajectories are archived at <https://doi.org/10.12488/xs1wj-a4a27>
